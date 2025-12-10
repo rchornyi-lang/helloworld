@@ -1,154 +1,136 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8" />
-<title>Хрестики-Нулики на Canvas</title>
+<meta charset="UTF-8">
+<title>Цікаві факти про Космос</title>
 <style>
     body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background: #eef2f5;
         margin: 0;
-        font-family: Arial;
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at top, #0d1b2a, #000);
+        color: #fff;
     }
-    #game {
-        border: 4px solid #089db8;
+    header {
+        text-align: center;
+        padding: 40px 20px;
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(5px);
+    }
+    h1 {
+        font-size: 3rem;
+        margin: 0;
+        text-shadow: 0 0 10px #00aaff;
+    }
+    p {
+        font-size: 1.2rem;
+    }
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+    .fact-box {
+        background: rgba(255,255,255,0.08);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 0 15px rgba(0,150,255,0.3);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+    .fact-box:hover {
+        transform: scale(1.02);
+    }
+    button {
+        padding: 15px 30px;
+        background: #0096ff;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: 0.2s;
+    }
+    button:hover {
+        background: #0077cc;
+    }
+    .stars {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: -1;
+    }
+    .star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
         background: white;
+        border-radius: 50%;
+        opacity: 0.7;
+        animation: twinkle 2s infinite ease-in-out;
+    }
+    @keyframes twinkle {
+        0% { opacity: 0.2; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.5); }
+        100% { opacity: 0.2; transform: scale(1); }
     }
 </style>
 </head>
 <body>
 
-<canvas id="game" width="300" height="300"></canvas>
+<div class="stars" id="stars"></div>
+
+<header>
+    <h1>Цікаві факти про Космос</h1>
+    <p>Натисни кнопку, щоб дізнатися щось нове про Всесвіт!</p>
+</header>
+
+<div class="container">
+    <div class="fact-box" id="fact">
+        Натисни кнопку нижче, щоб отримати цікавий факт.
+    </div>
+    <button onclick="newFact()">Показати факт</button>
+</div>
 
 <script>
-// ======= CANVAS ==========
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-const size = 100; // розмір клітинки
-let playingField = [-1,-1,-1,-1,-1,-1,-1,-1,-1];
-
-let player = 1; // 1 — хрестик, 0 — нулик
-
-// ======= ФУНКЦІЯ МАЛЮЄ ПОЛЕ ==========
-function drawField() {
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "#089db8";
-
-    for (let i = 1; i < 3; i++) {
-        // вертикальні
-        ctx.beginPath();
-        ctx.moveTo(i * size, 0);
-        ctx.lineTo(i * size, 300);
-        ctx.stroke();
-
-        // горизонтальні
-        ctx.beginPath();
-        ctx.moveTo(0, i * size);
-        ctx.lineTo(300, i * size);
-        ctx.stroke();
+// ===== Зірки на фоні =====
+function createStars() {
+    const starsContainer = document.getElementById("stars");
+    for (let i = 0; i < 150; i++) {
+        let star = document.createElement("div");
+        star.classList.add("star");
+        star.style.left = Math.random() * 100 + "%";
+        star.style.top = Math.random() * 100 + "%";
+        star.style.animationDuration = (Math.random() * 2 + 1) + "s";
+        starsContainer.appendChild(star);
     }
 }
+createStars();
 
-// ======= ХРЕСТИК ==========
-function drawCross(x, y) {
-    ctx.strokeStyle = "#e74c3c";
-    ctx.lineWidth = 4;
+// ===== Факти про космос =====
+const facts = [
+    "У космосі немає звуку, бо там немає повітря.",
+    "На Юпітері та Сатурні йдуть дощі з діамантів.",
+    "Сонце складає 99.86% усієї маси Сонячної системи.",
+    "Є зірка, яка повністю складається з алмазу — вона називається Люсі.",
+    "На Венері один день довший, ніж один рік.",
+    "У космосі астронавти стають на 5 см вищими.",
+    "Чорні діри можуть випаровуватися через випромінювання Гокінга.",
+    "Міжгалактичний простір не порожній — там є атоми водню.",
+    "Сліди астронавтів на Місяці можуть зберегтися мільйони років.",
+    "Наша галактика Молочний Шлях рухається зі швидкістю 552 км/с."
+];
 
-    ctx.beginPath();
-    ctx.moveTo(x + 10, y + 10);
-    ctx.lineTo(x + size - 10, y + size - 10);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(x + size - 10, y + 10);
-    ctx.lineTo(x + 10, y + size - 10);
-    ctx.stroke();
+// ===== Показ нового факту =====
+function newFact() {
+    const box = document.getElementById("fact");
+    const random = Math.floor(Math.random() * facts.length);
+    box.textContent = facts[random];
 }
-
-// ======= НУЛИК ==========
-function drawZero(x, y) {
-    ctx.strokeStyle = "#9b59b6";
-    ctx.lineWidth = 5;
-
-    ctx.beginPath();
-    ctx.arc(x + size / 2, y + size / 2, size/2 - 10, 0, Math.PI * 2);
-    ctx.stroke();
-}
-
-// ======= Перемальовує гру ==========
-function redraw() {
-    ctx.clearRect(0, 0, 300, 300);
-    drawField();
-
-    for (let i = 0; i < 9; i++) {
-        let val = playingField[i];
-        if (val === -1) continue;
-
-        let x = (i % 3) * size;
-        let y = Math.floor(i / 3) * size;
-
-        if (val === 1) drawCross(x, y);
-        else drawZero(x, y);
-    }
-}
-
-// ======= КЛІК ========
-canvas.addEventListener("click", (e) => {
-    let rect = canvas.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
-
-    let col = Math.floor(x / size);
-    let row = Math.floor(y / size);
-    let index = row * 3 + col;
-
-    if (playingField[index] !== -1) return; // клітинка зайнята
-
-    playingField[index] = player;
-
-    let winner = checkWin();
-    redraw();
-
-    if (winner !== -1) {
-        setTimeout(() => {
-            alert(winner === 1 ? "Виграв хрестик!" : "Виграв нулик!");
-        }, 100);
-        return;
-    }
-
-    player = (player === 1 ? 0 : 1);
-});
-
-// ======= Перевірка перемоги ========
-function checkCells(n1, n2, n3) {
-    if (
-        playingField[n1] === playingField[n2] &&
-        playingField[n2] === playingField[n3]
-    ) {
-        return playingField[n1];
-    }
-    return -1;
-}
-
-function checkWin() {
-    return (
-        checkCells(0,1,2) ||
-        checkCells(3,4,5) ||
-        checkCells(6,7,8) ||
-        checkCells(0,3,6) ||
-        checkCells(1,4,7) ||
-        checkCells(2,5,8) ||
-        checkCells(0,4,8) ||
-        checkCells(2,4,6)
-    );
-}
-
-// Початкове поле
-redraw();
 </script>
 
 </body>
