@@ -1,31 +1,155 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitHub Pages Test</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8" />
+<title>Хрестики-Нулики на Canvas</title>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #eef2f5;
+        margin: 0;
+        font-family: Arial;
+    }
+    #game {
+        border: 4px solid #089db8;
+        background: white;
+    }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Welcome to GitHub Pages!</h1>
-    <p>This is a simple test page to verify that everything is working.</p>
-    <button id="changeColorButton">Change Background Color</button>
-  </div>
 
-  <script>
-    document.getElementById('changeColorButton').addEventListener('click', function() {
-      document.body.style.backgroundColor = getRandomColor();
-    });
+<canvas id="game" width="300" height="300"></canvas>
 
-    function getRandomColor() {
-      const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
+<script>
+// ======= CANVAS ==========
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const size = 100; // розмір клітинки
+let playingField = [-1,-1,-1,-1,-1,-1,-1,-1,-1];
+
+let player = 1; // 1 — хрестик, 0 — нулик
+
+// ======= ФУНКЦІЯ МАЛЮЄ ПОЛЕ ==========
+function drawField() {
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#089db8";
+
+    for (let i = 1; i < 3; i++) {
+        // вертикальні
+        ctx.beginPath();
+        ctx.moveTo(i * size, 0);
+        ctx.lineTo(i * size, 300);
+        ctx.stroke();
+
+        // горизонтальні
+        ctx.beginPath();
+        ctx.moveTo(0, i * size);
+        ctx.lineTo(300, i * size);
+        ctx.stroke();
     }
-  </script>
+}
+
+// ======= ХРЕСТИК ==========
+function drawCross(x, y) {
+    ctx.strokeStyle = "#e74c3c";
+    ctx.lineWidth = 4;
+
+    ctx.beginPath();
+    ctx.moveTo(x + 10, y + 10);
+    ctx.lineTo(x + size - 10, y + size - 10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x + size - 10, y + 10);
+    ctx.lineTo(x + 10, y + size - 10);
+    ctx.stroke();
+}
+
+// ======= НУЛИК ==========
+function drawZero(x, y) {
+    ctx.strokeStyle = "#9b59b6";
+    ctx.lineWidth = 5;
+
+    ctx.beginPath();
+    ctx.arc(x + size / 2, y + size / 2, size/2 - 10, 0, Math.PI * 2);
+    ctx.stroke();
+}
+
+// ======= Перемальовує гру ==========
+function redraw() {
+    ctx.clearRect(0, 0, 300, 300);
+    drawField();
+
+    for (let i = 0; i < 9; i++) {
+        let val = playingField[i];
+        if (val === -1) continue;
+
+        let x = (i % 3) * size;
+        let y = Math.floor(i / 3) * size;
+
+        if (val === 1) drawCross(x, y);
+        else drawZero(x, y);
+    }
+}
+
+// ======= КЛІК ========
+canvas.addEventListener("click", (e) => {
+    let rect = canvas.getBoundingClientRect();
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+
+    let col = Math.floor(x / size);
+    let row = Math.floor(y / size);
+    let index = row * 3 + col;
+
+    if (playingField[index] !== -1) return; // клітинка зайнята
+
+    playingField[index] = player;
+
+    let winner = checkWin();
+    redraw();
+
+    if (winner !== -1) {
+        setTimeout(() => {
+            alert(winner === 1 ? "Виграв хрестик!" : "Виграв нулик!");
+        }, 100);
+        return;
+    }
+
+    player = (player === 1 ? 0 : 1);
+});
+
+// ======= Перевірка перемоги ========
+function checkCells(n1, n2, n3) {
+    if (
+        playingField[n1] === playingField[n2] &&
+        playingField[n2] === playingField[n3]
+    ) {
+        return playingField[n1];
+    }
+    return -1;
+}
+
+function checkWin() {
+    return (
+        checkCells(0,1,2) ||
+        checkCells(3,4,5) ||
+        checkCells(6,7,8) ||
+        checkCells(0,3,6) ||
+        checkCells(1,4,7) ||
+        checkCells(2,5,8) ||
+        checkCells(0,4,8) ||
+        checkCells(2,4,6)
+    );
+}
+
+// Початкове поле
+redraw();
+</script>
+
 </body>
 </html>
