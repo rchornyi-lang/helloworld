@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Pages Test</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to GitHub Pages!</h1>
+    <p>This is a simple test page to verify that everything is working.</p>
+    <button id="changeColorButton">Change Background Color</button>
+  </div>
+
+  <script>
+    document.getElementById('changeColorButton').addEventListener('click', function() {
+      document.body.style.backgroundColor = getRandomColor();
+    });
+
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+  </script>
+</body>
+</html>
